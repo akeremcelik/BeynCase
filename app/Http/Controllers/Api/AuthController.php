@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use DB;
 
 class AuthController extends Controller
 {
@@ -20,14 +21,19 @@ class AuthController extends Controller
             return response($validator->messages(), 200);
         }
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->save();
+        try {
+            DB::transaction(function() use($request) {
+                $user = new User();
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = Hash::make($request->password);
+                $user->save();
+            });
+        } catch (\Throwable $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
+        }
 
-        $user->createToken('Token')->accessToken;
-        return response()->json(['status' => true, 'message' => 'You have been registered successfully'], 200);
+        return response()->json(['status' => true, 'message' => 'Registration successful'], 200);
     }
 
     public function loginUser(Request $request) {
@@ -41,9 +47,9 @@ class AuthController extends Controller
 
         if(auth()->attempt(['email' => $request->email, 'password' => $request->password])) {
             $token = auth()->user()->createToken('Token')->accessToken;
-            return response()->json(['status' => true, 'token' => $token], 200);
+            return response()->json(['status' => true, 'message' => 'Login successful', 'token' => $token], 200);
         } else {
-            return response()->json(['status' => false, 'message' => 'Email or password is invalid'], 400);
+            return response()->json(['status' => false, 'error' => 'Email or password is invalid'], 400);
         }
     }
 }
