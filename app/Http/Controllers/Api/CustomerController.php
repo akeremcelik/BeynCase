@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use DB;
 use App\Models\User;
 use App\Models\Service;
+use Auth;
 
 class CustomerController extends Controller
 {
@@ -21,6 +22,9 @@ class CustomerController extends Controller
         }
 
         try {
+            if(Auth::guard('api')->user()->id != $request->user_id)
+                return response()->json(['status' => false, 'error' => 'User id mismatch'], 400);
+
             DB::transaction(function() use($request) {
                 $user = User::find($request->user_id);
                 $user->balance += $request->balance;
