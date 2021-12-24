@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use DB;
 use App\Models\User;
+use App\Models\Service;
 
 class CustomerController extends Controller
 {
@@ -30,5 +31,10 @@ class CustomerController extends Controller
         }
 
         return response()->json(['status' => true, 'message' => 'Add balance successful'], 200);
+    }
+
+    public function getServices() {
+        $services = Service::all();
+        return response()->json(['status' => true, 'data' => $services], 200);
     }
 }

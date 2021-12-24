@@ -24,5 +24,6 @@ Route::group(['prefix' => 'v1'], function(){
 
     Route::middleware('auth.api')->group(function() {
         Route::post('/add-balance', 'App\Http\Controllers\Api\CustomerController@addBalance');
+        Route::get('/get-services', 'App\Http\Controllers\Api\CustomerController@getServices');
     });
 });
