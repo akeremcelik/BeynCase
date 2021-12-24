@@ -49,6 +49,8 @@ class CreateCarModelsTable extends Migration
             $table->string('weight_limit');
             $table->timestamps();
         });
+
+        Artisan::call('fetch:car-models');
     }
 
     /**
