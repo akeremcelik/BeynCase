@@ -11,6 +11,7 @@ use App\Models\Service;
 use Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Order;
+use Carbon\Carbon;
 
 class CustomerController extends Controller
 {
@@ -64,5 +65,25 @@ class CustomerController extends Controller
         });
 
         return response()->json(['status' => true, 'message' => 'Place order successful'], 200);
+    }
+
+    public function listOrders(Request $request) {
+        $currentOrders = collect();
+
+        $orders = Order::where('user_id', Auth::guard('api')->user()->id)->get();
+        foreach($orders as $order) {
+            if(Carbon::now() < Carbon::parse($order->datetime))
+                $currentOrders->push($order);
+        }
+
+        $pastOrders = $orders->diff($currentOrders);
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'currentOrders' => $currentOrders,
+                'pastOrders' => $pastOrders
+            ]
+        ]);
     }
 }

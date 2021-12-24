@@ -26,5 +26,6 @@ Route::group(['prefix' => 'v1'], function(){
         Route::post('/add-balance', 'App\Http\Controllers\Api\CustomerController@addBalance');
         Route::get('/get-services', 'App\Http\Controllers\Api\CustomerController@getServices');
         Route::post('/place-order', 'App\Http\Controllers\Api\CustomerController@placeOrder');
+        Route::post('/list-orders', 'App\Http\Controllers\Api\CustomerController@listOrders');
     });
 });
