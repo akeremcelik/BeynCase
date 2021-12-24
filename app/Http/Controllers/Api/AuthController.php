@@ -29,7 +29,7 @@ class AuthController extends Controller
                 $user->password = Hash::make($request->password);
                 $user->save();
             });
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
         }
 
