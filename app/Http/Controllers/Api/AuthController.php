@@ -18,7 +18,7 @@ class AuthController extends Controller
             'password'=>'required|min:8',
         ]);
         if($validator->fails()) {
-            return response($validator->messages(), 200);
+            return response()->json(['status' => false, 'error' => $validator->messages()], 400);
         }
 
         try {
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'password'=>'required',
         ]);
         if($validator->fails()) {
-            return response($validator->messages(), 200);
+            return response()->json(['status' => false, 'error' => $validator->messages()], 400);
         }
 
         if(auth()->attempt(['email' => $request->email, 'password' => $request->password])) {
