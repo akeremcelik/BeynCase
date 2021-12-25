@@ -80,15 +80,40 @@ class CustomerController extends Controller
         $filterOptions = $request->filterOptions;
         $currentOrders = collect();
 
-        // This part will filter customer's orders if request has filterOptions parameter and table includes filter parameter column
+        /*
+            This part will filter customer's orders if request has filterOptions parameter and tables include filter parameter column
+            Example request:
+            {
+                "filterOptions": {
+                    "service": {
+
+                    },
+                    "carModel": {
+                        "brand": "ACURA",
+                        "model": "2018"
+                    }
+                }
+            }
+        */
+
         if($filterOptions && count($filterOptions) > 0) {
             $orders = Order::where('user_id', Auth::guard('api')->user()->id);
-            foreach ($filterOptions as $key => $filterOption) {
-                $orders = $orders->whereHas('carModel', function ($q) use ($key, $filterOption) {
-                    if(Schema::hasColumn('car_models', $key))
-                        $q->where($key, 'LIKE', '%' . $filterOption . '%');
-                });
+            $tableRelationArr = [
+                'carModel' => ['table' => 'car_models'],
+                'service' => ['table' => 'services']
+            ];
+
+            foreach ($filterOptions as $tableKey => $filterOption) {
+                if(isset($tableRelationArr[$tableKey])) {
+                    foreach ($filterOption as $columnKey => $value) {
+                        $orders = $orders->whereHas($tableKey, function ($q) use ($columnKey, $value, $tableRelationArr, $tableKey) {
+                            if(Schema::hasColumn($tableRelationArr[$tableKey]['table'], $columnKey))
+                                $q->where($columnKey, 'LIKE', '%' . $value . '%');
+                        });
+                    }
+                }
             }
+
             $orders = $orders->with(['service', 'carModel'])->get();
         } else {
             $orders = Order::where('user_id', Auth::guard('api')->user()->id)->with(['service', 'carModel'])->get();
