@@ -51,7 +51,11 @@ class CustomerController extends Controller
             return response()->json(['status' => false, 'error' => $validator->messages()], 400);
         }
 
-        DB::transaction(function() use($request) {
+        $servicePrice = Service::find($request->service_id)->price;
+        if(Auth::guard('api')->user()->balance < $servicePrice)
+            return response()->json(['status' => false, 'error' => 'Insufficient balance'], 400);
+
+        DB::transaction(function() use($request, $servicePrice) {
             try {
                 $order = new Order();
                 $order->user_id = Auth::guard('api')->user()->id;
@@ -59,6 +63,10 @@ class CustomerController extends Controller
                 $order->car_model_id = $request->car_model_id;
                 $order->datetime = $request->datetime;
                 $order->save();
+
+                $user = Auth::guard('api')->user();
+                $user->balance -= $servicePrice;
+                $user->save();
             } catch (\Exception $e) {
                 return response()->json(['status' => false, 'error' => $e->getMessage()], 400);
             }
