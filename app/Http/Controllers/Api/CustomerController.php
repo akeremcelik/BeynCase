@@ -12,6 +12,7 @@ use Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Order;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerController extends Controller
 {
@@ -76,9 +77,23 @@ class CustomerController extends Controller
     }
 
     public function listOrders(Request $request) {
+        $filterOptions = $request->filterOptions;
         $currentOrders = collect();
 
-        $orders = Order::where('user_id', Auth::guard('api')->user()->id)->with(['service' ,'carModel'])->get();
+        // This part will filter customer's orders if request has filterOptions parameter and table includes filter parameter column
+        if($filterOptions && count($filterOptions) > 0) {
+            $orders = Order::where('user_id', Auth::guard('api')->user()->id);
+            foreach ($filterOptions as $key => $filterOption) {
+                $orders = $orders->whereHas('carModel', function ($q) use ($key, $filterOption) {
+                    if(Schema::hasColumn('car_models', $key))
+                        $q->where($key, 'LIKE', '%' . $filterOption . '%');
+                });
+            }
+            $orders = $orders->with(['service', 'carModel'])->get();
+        } else {
+            $orders = Order::where('user_id', Auth::guard('api')->user()->id)->with(['service', 'carModel'])->get();
+        }
+
         foreach($orders as $order) {
             if(Carbon::now() < Carbon::parse($order->datetime))
                 $currentOrders->push($order);
