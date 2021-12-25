@@ -78,7 +78,7 @@ class CustomerController extends Controller
     public function listOrders(Request $request) {
         $currentOrders = collect();
 
-        $orders = Order::where('user_id', Auth::guard('api')->user()->id)->get();
+        $orders = Order::where('user_id', Auth::guard('api')->user()->id)->with(['service' ,'carModel'])->get();
         foreach($orders as $order) {
             if(Carbon::now() < Carbon::parse($order->datetime))
                 $currentOrders->push($order);
