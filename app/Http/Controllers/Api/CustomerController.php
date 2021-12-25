@@ -133,16 +133,16 @@ class CustomerController extends Controller
                 'currentOrders' => $currentOrders,
                 'pastOrders' => $pastOrders
             ]
-        ]);
+        ], 200);
     }
 
     public function getCarModels() {
         if(Cache::has('carModels')) {
-            return response()->json(['status' => true, 'data' => Cache::get('carModels')]);
+            return response()->json(['status' => true, 'data' => Cache::get('carModels')], 200);
         } else {
             $carModels = CarModel::all()->toArray();
             Cache::put('carModels', $carModels, 600);
-            return response()->json(['status' => true, 'data' => $carModels]);
+            return response()->json(['status' => true, 'data' => $carModels], 200);
         }
     }
 }
