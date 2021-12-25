@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CarModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use DB;
@@ -133,5 +134,15 @@ class CustomerController extends Controller
                 'pastOrders' => $pastOrders
             ]
         ]);
+    }
+
+    public function getCarModels() {
+        if(Cache::has('carModels')) {
+            return response()->json(['status' => true, 'data' => Cache::get('carModels')]);
+        } else {
+            $carModels = CarModel::all()->toArray();
+            Cache::put('carModels', $carModels, 600);
+            return response()->json(['status' => true, 'data' => $carModels]);
+        }
     }
 }
